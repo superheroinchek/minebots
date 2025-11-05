@@ -1,0 +1,35 @@
+[build-system]
+requires = ["setuptools>=67", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "minebot"
+version = "0.1.0"
+description = "Minecraft bot powered by LLaMA 11B"
+readme = "README.md"
+authors = [{name = "Minebot Dev", email = "dev@example.com"}]
+license = {text = "MIT"}
+requires-python = ">=3.10"
+dependencies = [
+    "torch",
+    "transformers>=4.37",
+    "accelerate",
+    "numpy",
+    "python-dotenv",
+    "pyyaml",
+    "loguru",
+    "aiofiles",
+    "typer[all]",
+    "pycraft>=1.5",
+    "networkx",
+    "tenacity"
+]
+
+[project.optional-dependencies]
+llama_cpp = ["llama-cpp-python"]
+
+[project.scripts]
+minebot = "minebot.cli:app"
+
+[tool.setuptools.packages.find]
+where = ["src"]
