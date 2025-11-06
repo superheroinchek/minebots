@@ -1,0 +1,24 @@
+# Example MineBots configuration file.
+simulation:
+  world_size: 24
+  resource_clusters: 10
+  max_cluster_size: 6
+  alert_threshold: 4
+  vision_resolution: [256, 256]
+  vision_noise: 6.0
+  seed: 1337
+vision:
+  frame_store: ./frames
+  max_history: 80
+  downscale_factor: 2
+transformer:
+  model_name: microsoft/phi-2
+  max_new_tokens: 128
+  temperature: 0.15
+  use_8bit: false
+  use_flash_attention: false
+memory:
+  max_events: 4096
+  summary_model_name: sentence-transformers/all-MiniLM-L6-v2
+goal: "Complete the simulated Juven world as efficiently as possible."
+max_cycles: 80
