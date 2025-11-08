@@ -36,8 +36,9 @@ def test_index_and_chat_roundtrip():
         with urllib.request.urlopen(request) as response:  # noqa: S310 - local test server
             data = json.loads(response.read().decode("utf-8"))
         assert "reasoning" in data and "final_answer" in data
-        assert "План работы" in data["reasoning"]
-        assert "Minebot" not in data["final_answer"]  # stylist keeps tone friendly
+        assert "План действий" in data["reasoning"]
+        assert "Черновик ответа" in data["reasoning"]
+        assert "План" not in data["final_answer"]  # финальный ответ без пересказа шагов
     finally:
         server.shutdown()
         server.server_close()
