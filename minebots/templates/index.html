@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="utf-8" />
+    <title>Minebots — Мини агент</title>
+    <style>
+      :root {
+        color-scheme: light dark;
+        font-family: "Segoe UI", "Helvetica Neue", sans-serif;
+      }
+      body {
+        margin: 0;
+        padding: 2rem;
+        background: radial-gradient(circle at top, #f5f7ff, #d7dbf5);
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      main {
+        width: min(720px, 90vw);
+        background: rgba(255, 255, 255, 0.85);
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(40, 60, 120, 0.25);
+        padding: 2rem;
+      }
+      h1 {
+        margin-top: 0;
+        text-align: center;
+        color: #1f2758;
+      }
+      form {
+        display: flex;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+      }
+      textarea {
+        flex: 1;
+        min-height: 90px;
+        padding: 0.75rem;
+        border-radius: 12px;
+        border: 1px solid rgba(31, 39, 88, 0.2);
+        resize: vertical;
+      }
+      button {
+        padding: 0.75rem 1.5rem;
+        border: none;
+        border-radius: 12px;
+        background: linear-gradient(135deg, #4f6ef7, #6f8dff);
+        color: white;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+      }
+      button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 30px rgba(79, 110, 247, 0.3);
+      }
+      .panel {
+        background: rgba(238, 240, 255, 0.7);
+        border-radius: 12px;
+        padding: 1rem 1.5rem;
+        margin-bottom: 1rem;
+      }
+      .history {
+        margin-top: 1.5rem;
+      }
+      .history h2 {
+        margin-bottom: 0.75rem;
+      }
+      .message {
+        border-left: 3px solid #4f6ef7;
+        padding-left: 1rem;
+        margin-bottom: 1rem;
+      }
+      pre {
+        white-space: pre-wrap;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>Minebots</h1>
+      <p>
+        Мини веб-интерфейс демонстрирует последовательность «обдумывание →
+        формулировка». Сообщение пользователя анализируется инструментом Thinker,
+        затем итоговая формулировка создаётся Stylist, учитывая исходный запрос.
+      </p>
+      <form id="chat-form">
+        <textarea id="user-message" placeholder="Сформулируйте задачу..." required></textarea>
+        <button type="submit">Отправить</button>
+      </form>
+      <section class="panel">
+        <h2>Результат</h2>
+        <div id="result">
+          <p>Введите сообщение, чтобы увидеть ход рассуждений агента.</p>
+        </div>
+      </section>
+      <section class="panel history">
+        <h2>История</h2>
+        <div id="history"></div>
+      </section>
+    </main>
+    <script>
+      const form = document.getElementById("chat-form");
+      const textarea = document.getElementById("user-message");
+      const result = document.getElementById("result");
+      const history = document.getElementById("history");
+
+      function renderHistory(items) {
+        history.innerHTML = "";
+        if (!items || !items.length) {
+          history.innerHTML = "<p>История пока пустая.</p>";
+          return;
+        }
+        items.slice().reverse().forEach(([user, answer]) => {
+          const wrapper = document.createElement("div");
+          wrapper.className = "message";
+          wrapper.innerHTML = `<strong>Вы:</strong> ${user}<br/><strong>Minebot:</strong> ${answer}`;
+          history.appendChild(wrapper);
+        });
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const message = textarea.value.trim();
+        if (!message) {
+          return;
+        }
+
+        result.innerHTML = "<p>Агент обдумывает ответ...</p>";
+
+        try {
+          const response = await fetch("/api/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message }),
+          });
+
+          if (!response.ok) {
+            throw new Error("Сервер вернул ошибку");
+          }
+
+          const data = await response.json();
+          result.innerHTML = `
+            <h3>Ход рассуждений</h3>
+            <pre>${data.reasoning}</pre>
+            <h3>Финальный ответ</h3>
+            <p>${data.final_answer}</p>
+          `;
+          renderHistory(data.history || []);
+        } catch (error) {
+          result.innerHTML = `<p>Не удалось получить ответ: ${error.message}</p>`;
+        }
+      });
+
+      renderHistory([]);
+    </script>
+  </body>
+</html>
